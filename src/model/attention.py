@@ -90,6 +90,7 @@ class CausalSelfAttention(nn.Module):
 
         output = self.W_O(output)
 
+        #note that htis time dropout is not to remove strong connection between tokens, this time dropout is to remove some feature dependency for each token this is important 
         output = self.dropout(output)
 
         return output

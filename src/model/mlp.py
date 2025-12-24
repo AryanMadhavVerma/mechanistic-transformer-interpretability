@@ -19,8 +19,8 @@ class MLP(nn.Module):
         super().__init__()
         #lets initial two layers where one expands and one contracts (up and down rojections)
 
-        self.W_1 = nn.Linear(self.config.d_model, self.config.d_ff, bias = self.config.bias)
-        self.W_2 = nn.Linear(self.config.d_ff, self.config.d_model, bias = self.config.bias)
+        self.W_1 = nn.Linear(config.d_model, config.d_ff, bias = config.bias)
+        self.W_2 = nn.Linear(config.d_ff, config.d_model, bias = config.bias)
 
         self.dropout = nn.Dropout(self.config.dropout)
     

@@ -55,8 +55,8 @@ class Trainer:
         #logits shape is batch, seq_len, vocab_size
         #input and target shape is batch, seq_len
 
-        logits_flattened = logits.view(-1, logits.size(-1))
-        targets_flattened = target.view(-1)
+        logits_flattened = logits.contiguous().view(-1, logits.size(-1))
+        targets_flattened = target.contiguous().view(-1)
 
         loss = F.cross_entropy(logits_flattened, targets_flattened)
 

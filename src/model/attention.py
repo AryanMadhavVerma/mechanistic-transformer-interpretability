@@ -30,6 +30,8 @@ class CausalSelfAttention(nn.Module):
         self.n_heads = config.n_heads
         self.d_head = config.d_head
 
+        self.attention_weights = None
+
     def forward(self, x):
         """
         x: (batch, seq_len, d_model)
@@ -59,6 +61,7 @@ class CausalSelfAttention(nn.Module):
 
         # Q cross product K(transpose) to get attention score matrix where we get the distance between each token to each other
         scores = Q @ K.transpose(-2,-1) #(this will give us batch, numbero fheads, context_length,context_length which is T)
+        #think of getrting the scores as dot product between the query vector with all vectors of inputs, just instead of one query vector, we have n number of vectors where n is the context lenght of the sequence
 
         #lets also scale the scaled mulopleicaiton to prevent softmax saturation 
 
@@ -73,11 +76,15 @@ class CausalSelfAttention(nn.Module):
         # lets aply softmax to get weights instead of scores (each row sums to 1 basically so we are making it probablistic) 
 
         attention_weights = F.softmax(scores, dim=-1)
+        #we will save in internal state of the object so that we can access it later for interprability 
+        
+        self.attention_weights = attention_weights
 
         #lets apply dropout to the attention weights
         attention_weights = self.dropout(attention_weights)
         #now we basically project the atention weights with value matrix to get output 
         #this is conceptually a weighted sum of the value vectors where the weights are the attention weights the output is in the form of B, n_heads, T, d_head
+        # think of this as getting the relation between each input token by getting the weights by mulktipliung query with key tranpose, and now using it along with value vectors to get weighted sum of all inputs with their attention scores, but not just doing it for one row of attention values which is one query vector but all query vectors, hence the matrix multiplaction 
         output = attention_weights @ V 
 
         #we now reassemble head where we go back from 8,6,10,64 to 8,10,384

@@ -53,7 +53,7 @@ def run_full_ablation_study(model, input_ids, device, config):
 def print_heatmap(importance_matrix, config):
     """Print ASCII heatmap of importance"""
     print("\n" + "="*70)
-    print("IMPORTANCE HEATMAP (Δ loss when head is ablated)")
+    print("IMPORTANCE HEATMAP (delta loss when head is ablated)")
     print("="*70)
     print("Positive = head is important (loss increases when removed)")
     print("Negative = head is harmful (loss decreases when removed)")
@@ -109,11 +109,11 @@ def print_rankings(importance_matrix, config):
     
     print("\n 10 most imp heads (removing hurts most):")
     for rank, (layer, head, delta) in enumerate(head_list[:10], 1):
-        print(f"{rank:2d}. Layer {layer}, Head {head}: Δ = {delta:+.4f}")
+        print(f"{rank:2d}. Layer {layer}, Head {head}: delta = {delta:+.4f}")
     
     print("\n10 most detrimental heads (removing helps!):")
     for rank, (layer, head, delta) in enumerate(reversed(head_list[-10:]), 1):
-        print(f"{rank:2d}. Layer {layer}, Head {head}: Δ = {delta:+.4f}")
+        print(f"{rank:2d}. Layer {layer}, Head {head}: delta = {delta:+.4f}")
 
 
 def print_layer_summary(importance_matrix, config):
@@ -134,7 +134,7 @@ def print_layer_summary(importance_matrix, config):
         neutral_heads = config.n_heads - important_heads - harmful_heads
         
         print(f"\nLayer {layer_idx}:")
-        print(f"  Mean Δ: {mean_delta:+.4f}  |  Range: [{min_delta:+.4f}, {max_delta:+.4f}]  |  Std: {std_delta:.4f}")
+        print(f"  Mean delta: {mean_delta:+.4f}  |  Range: [{min_delta:+.4f}, {max_delta:+.4f}]  |  Std: {std_delta:.4f}")
         print(f"  Heads: {important_heads} important, {neutral_heads} neutral, {harmful_heads} harmful")
 
 
@@ -194,7 +194,7 @@ def main():
     
     layer_means = np.mean(importance_matrix, axis=1)
     most_important_layer = np.argmax(layer_means)
-    print(f"\n3. Most important layer: Layer {most_important_layer} (avg Δ = {layer_means[most_important_layer]:+.4f})")
+    print(f"\n3. Most important layer: Layer {most_important_layer} (avg delta = {layer_means[most_important_layer]:+.4f})")
     print(f"   → Challenges assumption that early layers are most critical")
     
     max_importance = np.max(importance_matrix)

@@ -31,6 +31,7 @@ class CausalSelfAttention(nn.Module):
         self.d_head = config.d_head
 
         self.attention_weights = None
+        self.ablated_heads = set() # information on if any head is to be ablated/removed
 
     def forward(self, x):
         """
@@ -86,6 +87,10 @@ class CausalSelfAttention(nn.Module):
         #this is conceptually a weighted sum of the value vectors where the weights are the attention weights the output is in the form of B, n_heads, T, d_head
         # think of this as getting the relation between each input token by getting the weights by mulktipliung query with key tranpose, and now using it along with value vectors to get weighted sum of all inputs with their attention scores, but not just doing it for one row of attention values which is one query vector but all query vectors, hence the matrix multiplaction 
         output = attention_weights @ V 
+        #before we mix the output of the heads again together by tansposing the num heads column with the seq column we will see if ther eis ablatio nneeded 
+        if self.ablated_heads:
+            for head_idx in self.ablated_heads:
+                output[:,head_idx,:,:] = 0
 
         #we now reassemble head where we go back from 8,6,10,64 to 8,10,384
 

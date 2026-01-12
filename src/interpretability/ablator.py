@@ -74,5 +74,17 @@ class Ablator:
         finally:
             attention.ablated_heads.clear()
 
+    
+    @contextmanager
+    def ablate_mlp(self,layer_idx:int):
+        mlp = self.model.blocks[layer_idx].mlp
+        mlp.ablated = True
+        
+        try:
+            yield
+        finally:
+            mlp.ablated = False
+    
+
 
     

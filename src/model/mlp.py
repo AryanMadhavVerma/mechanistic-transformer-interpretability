@@ -23,6 +23,7 @@ class MLP(nn.Module):
         self.W_2 = nn.Linear(self.config.d_ff, self.config.d_model, bias = self.config.bias)
 
         self.dropout = nn.Dropout(self.config.dropout)
+        self.ablated = False
     
     def forward(self, x):
         """
@@ -41,6 +42,9 @@ class MLP(nn.Module):
 
         x = self.dropout(x)
 
+        if self.ablated:
+            return torch.zeros_like(x)
+            
         return x
 
     

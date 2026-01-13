@@ -31,7 +31,7 @@ class CausalSelfAttention(nn.Module):
         self.d_head = config.d_head
 
         self.attention_weights = None
-        self.ablated_heads = set() # information on if any head is to be ablated/removed
+        self.ablated_heads = set() # information on if any head is to be ablated/removed later durng interpretability analysis
 
     def forward(self, x):
         """

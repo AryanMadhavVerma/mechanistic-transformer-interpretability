@@ -32,14 +32,14 @@ def main():
         split="train",
         batch_size=4,
         context_length=config.context_length,
-        max_examples=500
+        max_examples=2000
     )
 
     val_dataloader = create_dataloader(
         split="validation",
         batch_size=4,
         context_length=config.context_length,
-        max_examples=500
+        max_examples=2000
     )
 
     print(f"length of training and validation batches ius {len(train_dataloader)}")
@@ -58,7 +58,7 @@ def main():
     print("starting training...")
     print("="*50 + "\n")
 
-    trainer.train(num_epochs=3)
+    trainer.train(num_epochs=5)
 
     print("\n" + "="*50)
     print("training complete")

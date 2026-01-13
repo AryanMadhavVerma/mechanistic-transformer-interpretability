@@ -32,7 +32,7 @@ def main():
     model = GPT(config)
     
     device = "mps" if torch.backends.mps.is_available() else "cpu"
-    checkpoint = torch.load("checkpoints/epoch_2.pt", map_location=device)
+    checkpoint = torch.load("checkpoints/epoch_4.pt", map_location=device)
     model.load_state_dict(checkpoint["model_state_dict"])
     model.to(device)
     model.eval()

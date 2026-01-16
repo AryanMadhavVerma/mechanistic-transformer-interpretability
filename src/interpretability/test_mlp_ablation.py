@@ -10,6 +10,7 @@ from src.model.config import GPTConfig
 from src.model.transformer import GPT
 from src.data.tokenizer import Tokenizer
 from src.interpretability.ablator import Ablator
+import glob
 
 
 def compute_loss(model, input_ids, device):
@@ -34,7 +35,12 @@ def main():
     model = GPT(config)
     
     device = "mps" if torch.backends.mps.is_available() else "cpu"
-    checkpoint = torch.load("checkpoints/epoch_4.pt", map_location=device)
+    checkpoint_files = glob.glob("checkpoints/epoch_*.pt")
+    if not checkpoint_files:
+        raise FileNotFoundError("No checkpoint files found in checkpoints directory")
+    latest_checkpoint = max(checkpoint_files, key=lambda x: int(x.split("_")[1].split(".")[0]))
+    print(f"Loading the latest checkpoint {latest_checkpoint} for analysis")
+    checkpoint = torch.load(latest_checkpoint, map_location="mps")
     model.load_state_dict(checkpoint["model_state_dict"])
     model.to(device)
     model.eval()

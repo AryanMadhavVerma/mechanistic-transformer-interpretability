@@ -30,14 +30,14 @@ def main():
     print("\n loading data...")
     train_dataloader = create_dataloader(
         split="train",
-        batch_size=4,
+        batch_size=8,
         context_length=config.context_length,
-        max_examples=2000
+        max_examples=20000
     )
 
     val_dataloader = create_dataloader(
         split="validation",
-        batch_size=4,
+        batch_size=8,
         context_length=config.context_length,
         max_examples=2000
     )
@@ -48,7 +48,7 @@ def main():
         model=model,
         train_dataloader=train_dataloader,
         val_dataloader=val_dataloader,
-        learning_rate=3e-4,
+        learning_rate=2e-4,
         weight_decay=0.1,
         device=device,
         checkpoint_dir="checkpoints"
@@ -58,7 +58,9 @@ def main():
     print("starting training...")
     print("="*50 + "\n")
 
-    trainer.train(num_epochs=5)
+    # Training will automatically resume from the latest checkpoint if found
+    # Set resume=False to start from scratch: trainer.train(num_epochs=10, resume=False)
+    trainer.train(num_epochs=10, resume=True)
 
     print("\n" + "="*50)
     print("training complete")

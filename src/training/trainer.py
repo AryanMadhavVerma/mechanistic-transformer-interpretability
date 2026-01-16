@@ -9,6 +9,8 @@ import torch.nn.functional as F
 from torch.optim import AdamW
 from tqdm import tqdm
 import os
+import glob
+import re
 
 
 class Trainer:
@@ -49,7 +51,7 @@ class Trainer:
         """
         We will compute cross entropy loss which is basically softmaxing the logits to create probablities and choose the probablity of the trarget token, and then negative log value of it which is loss
         """
-        input = batch[:, :-1] 
+        input = batch[:, :-1]
         target = batch[:, 1:]
         logits = self.model(input)
         #logits shape is batch, seq_len, vocab_size
@@ -105,15 +107,27 @@ class Trainer:
         avg_loss = total_loss / len(self.val_dataloader)
         return avg_loss
     
-    def train(self, num_epochs):
+    def train(self, num_epochs, resume=True):
         """
         Do multiple iteraitons of the train epoch function based on the num_epoch value
         """
 
-        print(f"We are starting training for {num_epochs} epochs")
+        start_epoch = 0
+        if resume:
+            checkpoint_loaded = self.load_checkpoint()
+            if checkpoint_loaded:
+                start_epoch = self.current_epoch + 1  # Continue from next epoch
+                print(f"Resuming training from epoch {start_epoch}")
+        
+        # Check if already completed
+        if start_epoch >= num_epochs:
+            print(f"Training already completed {start_epoch} epochs (target: {num_epochs})")
+            return
+
+        print(f"We are starting training for {num_epochs} epochs (from epoch {start_epoch})")
         print(f"Number of batches we are training: {len(self.train_dataloader)}")
 
-        for epoch in range(num_epochs):
+        for epoch in range(start_epoch, num_epochs):
             self.current_epoch = epoch 
 
             train_loss = self.train_epoch()
@@ -122,7 +136,6 @@ class Trainer:
             if self.val_dataloader:
                 val_loss = self.validate()
                 print(f"Epoch {epoch}: Validation Loss = {val_loss:.4f}")
-
 
             self.save_checkpoint(f"epoch_{epoch}.pt")
         
@@ -140,6 +153,59 @@ class Trainer:
         path = os.path.join(self.checkpoint_dir, filename)
         torch.save(checkpoint, path)
         print(f"Checkpoint saved to {path}")
+    
+    def find_latest_checkpoint(self):
+        """Find the latest checkpoint file in checkpoint directory"""
+        checkpoint_pattern = os.path.join(self.checkpoint_dir, "epoch_*.pt")
+        checkpoints = glob.glob(checkpoint_pattern)
+        
+        if not checkpoints:
+            return None
+        
+        epoch_numbers = []
+        for ckpt in checkpoints:
+            match = re.search(r'epoch_(\d+)\.pt', ckpt)
+            if match:
+                epoch_numbers.append((int(match.group(1)), ckpt))
+        
+        if not epoch_numbers:
+            return None
+        
+        # Sort by epoch number and return the latest
+        epoch_numbers.sort(key=lambda x: x[0], reverse=True)
+        latest_epoch, latest_path = epoch_numbers[0]
+        
+        return latest_path
+    
+    def load_checkpoint(self, checkpoint_path=None):
+        """
+        Load checkpoint to resume training
+        If checkpoint_path is None, automatically finds the latest checkpoint
+        """
+        if checkpoint_path is None:
+            checkpoint_path = self.find_latest_checkpoint()
+        
+        if checkpoint_path is None:
+            print("No checkpoint found. Starting training from scratch.")
+            return False
+        
+        if not os.path.exists(checkpoint_path):
+            print(f"Checkpoint {checkpoint_path} not found. Starting from scratch.")
+            return False
+        
+        print(f"Loading checkpoint from {checkpoint_path}")
+        checkpoint = torch.load(checkpoint_path, map_location=self.device)
+        
+        # Load model and optimizer states
+        self.model.load_state_dict(checkpoint["model_state_dict"])
+        self.optimiser.load_state_dict(checkpoint["optimiser_state_dict"])
+        
+        # Load training state
+        self.current_epoch = checkpoint["epoch"]
+        self.global_step = checkpoint["global_step"]
+        
+        print(f"Resumed from epoch {self.current_epoch}, global step {self.global_step}")
+        return True
         
         
 
